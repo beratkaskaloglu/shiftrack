@@ -79,13 +79,13 @@ export function QRScanner({ personnelId, mode, onSuccess, onClose, expectedStati
       setDebugInfo(hasBarcodeDetector ? "BarcodeDetector aktif" : "jsQR aktif");
 
       if (hasBarcodeDetector) {
-        // @ts-expect-error
+        // @ts-expect-error BarcodeDetector is not in TypeScript types yet
         const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
         const tick = async () => {
           if (doneRef.current) return;
           if (video.readyState >= 2) {
             try {
-              // @ts-expect-error
+              // @ts-expect-error BarcodeDetector is not in TypeScript types yet
               const codes = await detector.detect(video);
               setDebugInfo(`BarcodeDetector: ${video.videoWidth}x${video.videoHeight} — ${codes.length} kod`);
               if (codes.length > 0) { onDetected(codes[0].rawValue); return; }
