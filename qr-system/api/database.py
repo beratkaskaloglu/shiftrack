@@ -5,8 +5,6 @@ from config import settings
 
 engine = create_async_engine(
     settings.database_url,
-    pool_size=10,
-    max_overflow=20,
     echo=settings.environment == "development",
 )
 
