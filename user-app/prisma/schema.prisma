@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Personnel {
+  id          String   @id @default(uuid())
+  username    String   @unique
+  password    String   // bcrypt hash
+  firstName   String
+  lastName    String
+  email       String?
+  phone       String?
+  platform    String
+  project     String
+  personnelNo String?
+  avatarUrl   String?
+  role        String   @default("personnel") // personnel | supervisor
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  shiftAssignments ShiftAssignment[]
+  workAssignments  WorkAssignment[]
+  checkinLogs      CheckinLog[]
+  turnstileLogs    TurnstileLog[]
+
+  @@map("personnel")
+}
+
+model Shift {
+  id        String   @id @default(uuid())
+  name      String
+  type      String   // A, B, C
+  startTime String   // HH:mm
+  endTime   String   // HH:mm
+  project   String
+  createdAt DateTime @default(now())
+
+  assignments ShiftAssignment[]
+
+  @@map("shifts")
+}
+
+model ShiftAssignment {
+  id          String    @id @default(uuid())
+  personnelId String
+  shiftId     String
+  startDate   DateTime
+  endDate     DateTime?
+  createdAt   DateTime  @default(now())
+
+  personnel Personnel @relation(fields: [personnelId], references: [id])
+  shift     Shift     @relation(fields: [shiftId], references: [id])
+
+  @@map("shift_assignments")
+}
+
+model Station {
+  id        String   @id @default(uuid())
+  name      String
+  type      String   // entry | work_station
+  warehouse String?
+  createdAt DateTime @default(now())
+
+  workTasks   WorkTask[]
+  checkinLogs CheckinLog[]
+  workLogs    WorkLog[]
+
+  @@map("stations")
+}
+
+model WorkTask {
+  id               String   @id @default(uuid())
+  name             String
+  description      String?
+  stationId        String
+  priority         String   @default("medium") // low | medium | high
+  expectedDuration Int      // minutes
+  createdAt        DateTime @default(now())
+
+  station     Station          @relation(fields: [stationId], references: [id])
+  assignments WorkAssignment[]
+
+  @@map("work_tasks")
+}
+
+model WorkAssignment {
+  id          String    @id @default(uuid())
+  personnelId String
+  workTaskId  String
+  status      String    @default("pending") // pending | in_progress | completed
+  startedAt   DateTime?
+  completedAt DateTime?
+  assignedAt  DateTime  @default(now())
+
+  personnel Personnel @relation(fields: [personnelId], references: [id])
+  workTask  WorkTask  @relation(fields: [workTaskId], references: [id])
+  workLogs  WorkLog[]
+
+  @@map("work_assignments")
+}
+
+model WorkLog {
+  id               String   @id @default(uuid())
+  workAssignmentId String
+  stationId        String
+  action           String   // start | stop
+  scannedAt        DateTime @default(now())
+
+  workAssignment WorkAssignment @relation(fields: [workAssignmentId], references: [id])
+  station        Station        @relation(fields: [stationId], references: [id])
+
+  @@map("work_logs")
+}
+
+model CheckinLog {
+  id          String   @id @default(uuid())
+  personnelId String
+  stationId   String
+  stationType String   // entry | work_station
+  checkedInAt DateTime @default(now())
+
+  personnel Personnel @relation(fields: [personnelId], references: [id])
+  station   Station   @relation(fields: [stationId], references: [id])
+
+  @@map("checkin_logs")
+}
+
+model TurnstileLog {
+  id          String    @id @default(uuid())
+  personnelId String
+  entryTime   DateTime
+  exitTime    DateTime?
+  stationName String
+  createdAt   DateTime  @default(now())
+
+  personnel Personnel @relation(fields: [personnelId], references: [id])
+
+  @@map("turnstile_logs")
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  imageUrl  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("announcements")
+}
