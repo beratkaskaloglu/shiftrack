@@ -31,10 +31,13 @@ echo ""
 
 # ── user-app/.env ──────────────────────────────────────────────────────────────
 
+JWT_ACCESS_SECRET=$(openssl rand -hex 32)
+JWT_REFRESH_SECRET=$(openssl rand -hex 32)
+
 cat > user-app/.env <<EOF
 DATABASE_URL="sqlserver://${DB_SERVER}:${DB_PORT};database=${DB_NAME};user=${DB_USER};password=${DB_PASS};encrypt=true;trustServerCertificate=true"
-JWT_ACCESS_SECRET="shifttrack-access-secret-change-in-production"
-JWT_REFRESH_SECRET="shifttrack-refresh-secret-change-in-production"
+JWT_ACCESS_SECRET="${JWT_ACCESS_SECRET}"
+JWT_REFRESH_SECRET="${JWT_REFRESH_SECRET}"
 QR_TOKEN_API_URL="http://localhost:8000"
 NEXT_PUBLIC_QR_API_URL="http://localhost:8000"
 NEXT_PUBLIC_APP_URL="http://localhost:3001"
@@ -58,9 +61,11 @@ for d in ['ODBC Driver 18 for SQL Server', 'ODBC Driver 17 for SQL Server']:
 ODBC_DRIVER_ENCODED=$(echo "$ODBC_DRIVER" | sed 's/ /+/g')
 echo "[INFO] Kullanilan ODBC Driver: $ODBC_DRIVER"
 
+QR_JWT_SECRET=$(openssl rand -hex 32)
+
 cat > qr-system/api/.env <<EOF
 DATABASE_URL=mssql+aioodbc://${DB_USER}:${ENCODED_PASS}@${DB_SERVER}:${DB_PORT}/${DB_NAME}?driver=${ODBC_DRIVER_ENCODED}&TrustServerCertificate=yes
-JWT_SECRET=shifttrack-dev-secret-2026
+JWT_SECRET=${QR_JWT_SECRET}
 ENVIRONMENT=development
 TOKEN_TTL_HOURS=24
 CORS_ORIGINS=http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003
@@ -109,8 +114,6 @@ echo ""
 echo "  Servisleri baslatmak icin:"
 echo "  bash opening.sh"
 echo ""
-echo "  Giris bilgileri:"
-echo "  User App  : recep.ulu / recep123"
-echo "  Admin     : admin / admin123"
+echo "  Giris bilgileri icin veritabani seed verisine bakin."
 echo "========================================"
 echo ""

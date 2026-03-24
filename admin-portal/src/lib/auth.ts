@@ -1,9 +1,10 @@
 import { SignJWT, jwtVerify } from "jose";
 import type { AuthUser, UserRole } from "./types";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "shifttrack-admin-secret-key-change-in-production"
-);
+if (!process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET environment variable is not set");
+}
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 const TOKEN_EXPIRY = "8h";
 
